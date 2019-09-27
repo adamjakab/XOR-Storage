@@ -36,7 +36,7 @@ class StringSplitter:
 
         self._pad_chunks()
 
-    def create_party(self):
+    def create_parity(self):
         parity_bytes = bytearray()
         for li in range(self._chunk_length):
             # print("-" * 30)

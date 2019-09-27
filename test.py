@@ -24,7 +24,7 @@ print("-" * 64)
 splitter = StringSplitter(input_string, number_of_databases)
 splitter.split()
 # splitter.dump_chunks()
-splitter.create_party()
+splitter.create_parity()
 splitter.dump_chunks()
 chunks = splitter.get_chunks()
 
@@ -35,35 +35,6 @@ print("Testing with missing chunk[{0}]: '{1}'".format(chunk_index, chunks[chunk_
 del chunks[chunk_index]
 reconstructor = StringReconstructor(chunks)
 reconstructor.reconstruct()
-
-
-
-
-'''
-s1 = "a"
-s2 = "x"
-s3 = "d"
-
-o1 = ord(s1)
-o2 = ord(s2)
-o3 = ord(s3)
-op = 0 ^ o1 ^ o2 ^ o3
-
-print(o1)
-print(o2)
-print(o3)
-print("Parity", op)
-
-m1 = o2 ^ o3 ^ op
-print("M1", m1)
-
-m2 = o1 ^ o3 ^ op
-print("M2", m2)
-
-m3 = o1 ^ o2 ^ op
-print("M2", m3)
-'''
-
 
 
 
