@@ -12,12 +12,12 @@ def random_string(string_length=10):
 
 # Variables
 generated_input_length = 128
-number_of_databases = 4
+number_of_databases = 3
 
-# input_string = "Adam was here but now he has left the building. " * 2
+input_string = "Adam was here but now he has left the building."
 # input_string = "ADAM"
 # input_string = random_string(generated_input_length)
-input_string = "My name is Adam!" * 3
+# input_string = "My name is Adam!" * 3
 
 # Splitter
 print("-" * 64)

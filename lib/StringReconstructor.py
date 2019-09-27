@@ -1,13 +1,13 @@
 from string import *
-from math import ceil
 from base64 import b64encode, b64decode
-import textwrap
+from itertools import product, permutations, islice, count
 
 
 class StringReconstructor:
     _chunks = None
     _reconstructed_chunk = None
     _parity_bytes = None
+    _original_input = None
 
     def __init__(self, chunks):
         self._chunks = chunks
@@ -15,6 +15,33 @@ class StringReconstructor:
     def reconstruct(self):
         self._check_chunks()
         self._reconstruct_missing_chunk()
+        self._reconstruct_original_input()
+
+    def _reconstruct_original_input(self):
+        chunks = self._chunks
+        if self._reconstructed_chunk is not None:
+            chunks.append(self._reconstructed_chunk)
+
+        number_of_chunks = len(self._chunks)
+        print("All Chunks[length: {1}]: {0}".format(chunks, number_of_chunks))
+
+        # The correct order is unknown so we need to test them all
+        order_array = []
+        for i in islice(count(), number_of_chunks):
+            order_array.append(i)
+
+        order_combinations = permutations(order_array, len(order_array))
+
+        for order_array in list(order_combinations):
+            # print("Order: {0}".format(order_array))
+            encoded_string = ""
+            for current_index in order_array:
+                current_chunk = self._chunks[current_index].strip("|")
+                encoded_string += current_chunk
+
+            original_string = b64decode(encoded_string)
+            print("Encoded string[{0}]: '{1}' => '{2}'".format(order_array, encoded_string, original_string))
+
 
 
     def _reconstruct_missing_chunk(self):

@@ -5,6 +5,7 @@ import textwrap
 
 
 class StringSplitter:
+
     _input_string = None
     _number_of_databases = None
     _number_of_chunks = None
@@ -12,7 +13,8 @@ class StringSplitter:
     _chunks = None
 
     def __init__(self, input_string, number_of_databases):
-        self._input_string = input_string
+        self._input_suffix = '***'
+        self._input_string = '___' + input_string + '___'
         self._number_of_databases = number_of_databases
         self._number_of_chunks = self._number_of_databases - 1
 
