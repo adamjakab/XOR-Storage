@@ -1,3 +1,5 @@
+import binascii
+import json
 from string import *
 from base64 import b64encode, b64decode
 from itertools import product, permutations, islice, count
@@ -19,30 +21,62 @@ class StringReconstructor:
 
     def _reconstruct_original_input(self):
         chunks = self._chunks
+
         if self._reconstructed_chunk is not None:
             chunks.append(self._reconstructed_chunk)
 
         number_of_chunks = len(self._chunks)
         print("All Chunks[length: {1}]: {0}".format(chunks, number_of_chunks))
 
-        # The correct order is unknown so we need to test them all
+        '''
+            The correct order of the chunks is unknown so we need to test them all
+            1) we create a list of chunk numbers: order_array
+            2) we create a list of all possible combination of orders: order_combinations
+            3) we combine the chunks trying each order combination and see if we get a correct answer
+        '''
         order_array = []
         for i in islice(count(), number_of_chunks):
             order_array.append(i)
 
-        order_combinations = permutations(order_array, len(order_array))
+        order_combinations = list(permutations(order_array, len(order_array)))
+        print("Combinations: {0}".format(order_combinations))
 
-        for order_array in list(order_combinations):
+        payload_object = None
+        for order_array in order_combinations:
             # print("Order: {0}".format(order_array))
             encoded_string = ""
             for current_index in order_array:
-                current_chunk = self._chunks[current_index].strip("|")
+                current_chunk = self._chunks[current_index]
                 encoded_string += current_chunk
 
-            original_string = b64decode(encoded_string)
-            print("Encoded string[{0}]: '{1}' => '{2}'".format(order_array, encoded_string, original_string))
+            encoded_string = encoded_string.strip("|")
+            # print("Encoded string[{0}]: '{1}'".format(order_array, encoded_string))
 
+            try:
+                payload_object = self._get_valid_json(encoded_string)
+                break
+            except ValueError:
+                pass
 
+        if payload_object is None:
+            raise ValueError("Unable to reconstruct original payload!")
+
+        print("Valid payload JSON: '{0}'".format(json.dumps(payload_object)))
+        print("DONE!")
+
+    # noinspection PyMethodMayBeStatic
+    def _get_valid_json(self, b64_encoded_string):
+        try:
+            json_string = b64decode(b64_encoded_string)
+        except binascii.Error:
+            raise ValueError("Unable to b64 decode!")
+
+        try:
+            json_object = json.loads(json_string)
+        except ValueError:
+            raise ValueError("Invalid Json!")
+        else:
+            return json_object
 
     def _reconstruct_missing_chunk(self):
         if self._parity_bytes is not None:
@@ -63,13 +97,13 @@ class StringReconstructor:
                 # print("Missing_byte_{0}: {1}: {2}".format(li, hex(missing_byte), missing_char))
 
             self._reconstructed_chunk = missing_chunk
-            print("Missing chunk: {0}".format(self._reconstructed_chunk))
+            print("Missing chunk: '{0}'".format(self._reconstructed_chunk))
 
     def _check_chunks(self):
         print("Available chunks: '{0}'".format(self._chunks))
 
         self._extract_parity_chunk()
-        print("Parity Bytes[length:{1}]: {0}".format(self._parity_bytes, len(self._parity_bytes)))
+        # print("Parity Bytes[length:{1}]: {0}".format(self._parity_bytes, len(self._parity_bytes)))
         print("Available chunks: '{0}'".format(self._chunks))
 
     def _extract_parity_chunk(self):

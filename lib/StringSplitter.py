@@ -1,11 +1,12 @@
 from string import *
+import zlib
+import json
 from math import ceil
 from base64 import b64encode, b64decode
 import textwrap
 
 
 class StringSplitter:
-
     _input_string = None
     _number_of_databases = None
     _number_of_chunks = None
@@ -13,25 +14,41 @@ class StringSplitter:
     _chunks = None
 
     def __init__(self, input_string, number_of_databases):
-        self._input_suffix = '***'
-        self._input_string = '___' + input_string + '___'
+        self._input_string = input_string
         self._number_of_databases = number_of_databases
         self._number_of_chunks = self._number_of_databases - 1
 
     def split(self):
-        encoded_string = b64encode(self._input_string.encode()).decode()
-        encoded_length = len(encoded_string)
+        input_len = len(self._input_string)
+        input_enc = self._input_string.encode()
+        input_crc = hex(zlib.crc32(input_enc) & 0xffffffff)
+        # print("INPUT[length:{0}][CRC:{1}]: '{2}'".format(input_len, input_crc, self._input_string))
 
-        # DEBUG
-        print("INPUT[length:{0}]: '{1}'".format(len(self._input_string), self._input_string))
-        print("BASE64[length:{0}]: '{1}'".format(encoded_length, encoded_string))
+        input_b64 = b64encode(input_enc)
+        input_b64_crc = hex(zlib.crc32(input_b64) & 0xffffffff)
+        input_b64_str = input_b64.decode()
+        input_b64_str_len = len(input_b64)
+        # print("BASE64[length:{0}][CRC:{1}]: '{2}'".format(input_b64_str_len, input_b64_crc, input_b64_str))
 
-        if encoded_length % 2 != 0:
-            raise ValueError("Encoded length error! Odd length.")
+        output_object = {
+            "input_length":         input_len,
+            "input_crc":            input_crc,
+            "input_b64_str":        input_b64_str,
+            "input_b64_str_len":    input_b64_str_len,
+            "input_b64_crc":        input_b64_crc,
+        }
 
-        self._chunk_length = int(ceil(encoded_length / self._number_of_chunks))
+        output_json = json.dumps(output_object)
+        print("OUTPUT JSON: {0}".format(output_json))
+        output_json_b64_str = b64encode(output_json.encode()).decode()
+        output_json_b64_str_len = len(output_json_b64_str)
+
+        if output_json_b64_str_len % 2 != 0:
+            raise ValueError("BASE64 string length error! Odd length.")
+
+        self._chunk_length = int(ceil(output_json_b64_str_len / self._number_of_chunks))
         print("CHUNK LENGTH: {0}".format(self._chunk_length))
-        self._chunks = textwrap.wrap(encoded_string, self._chunk_length)
+        self._chunks = textwrap.wrap(output_json_b64_str, self._chunk_length)
 
         if len(self._chunks) != self._number_of_chunks:
             raise ValueError("Not enough chunks!")
@@ -52,7 +69,7 @@ class StringSplitter:
             parity_bytes.append(parity_byte)
             # print("Parity_byte_{0}: {1}".format(li, hex(parity_byte)))
 
-        print("Parity_bytes: {0}".format(parity_bytes))
+        # print("Parity_bytes: {0}".format(parity_bytes))
         parity_chunk = b64encode(parity_bytes).decode()
         # print("Parity_chunk: {0}".format(parity_chunk))
         self._chunks.append(parity_chunk)
