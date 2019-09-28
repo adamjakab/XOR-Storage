@@ -30,6 +30,7 @@ class StringSplitter:
         input_b64_str_len = len(input_b64)
         # print("BASE64[length:{0}][CRC:{1}]: '{2}'".format(input_b64_str_len, input_b64_crc, input_b64_str))
 
+        # @todo: This is not testable this way - needs better separation
         output_object = {
             "input_length":         input_len,
             "input_crc":            input_crc,
@@ -39,7 +40,7 @@ class StringSplitter:
         }
 
         output_json = json.dumps(output_object)
-        print("OUTPUT JSON: {0}".format(output_json))
+        # print("OUTPUT JSON: {0}".format(output_json))
         output_json_b64_str = b64encode(output_json.encode()).decode()
         output_json_b64_str_len = len(output_json_b64_str)
 
@@ -47,7 +48,7 @@ class StringSplitter:
             raise ValueError("BASE64 string length error! Odd length.")
 
         self._chunk_length = int(ceil(output_json_b64_str_len / self._number_of_chunks))
-        print("CHUNK LENGTH: {0}".format(self._chunk_length))
+        # print("CHUNK LENGTH: {0}".format(self._chunk_length))
         self._chunks = textwrap.wrap(output_json_b64_str, self._chunk_length)
 
         if len(self._chunks) != self._number_of_chunks:
@@ -77,11 +78,11 @@ class StringSplitter:
     def get_chunks(self):
         return self._chunks
 
-    def dump_chunks(self):
-        i = 1
-        for chunk in self._chunks:
-            print("CHUNK({0})[length:{1}]: '{2}'".format(i, len(chunk), chunk))
-            i = i + 1
+    # def dump_chunks(self):
+    #     i = 1
+    #     for chunk in self._chunks:
+    #         print("CHUNK({0})[length:{1}]: '{2}'".format(i, len(chunk), chunk))
+    #         i = i + 1
 
     def _pad_chunks(self):
         for index, chunk in enumerate(self._chunks):
