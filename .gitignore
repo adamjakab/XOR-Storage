@@ -26,3 +26,6 @@
 # Gradle
 .idea/**/gradle.xml
 .idea/**/libraries
+
+# Storage
+storage/**
