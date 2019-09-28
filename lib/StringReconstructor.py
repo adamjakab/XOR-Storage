@@ -1,5 +1,6 @@
 import binascii
 import json
+import zlib
 from string import *
 from base64 import b64encode, b64decode
 from itertools import product, permutations, islice, count
@@ -14,10 +15,17 @@ class StringReconstructor:
     def __init__(self, chunks):
         self._chunks = chunks
 
+    def get_original_input(self):
+        return self._original_input
+
     def reconstruct(self):
         self._check_chunks()
         self._reconstruct_missing_chunk()
-        self._reconstruct_original_input()
+        try:
+            self._reconstruct_original_input()
+            print("PASS")
+        except ValueError:
+            print("FAIL!")
 
     def _reconstruct_original_input(self):
         chunks = self._chunks
@@ -39,7 +47,7 @@ class StringReconstructor:
             order_array.append(i)
 
         order_combinations = list(permutations(order_array, len(order_array)))
-        print("Combinations: {0}".format(order_combinations))
+        # print("Combinations: {0}".format(order_combinations))
 
         payload_object = None
         for order_array in order_combinations:
@@ -54,15 +62,41 @@ class StringReconstructor:
 
             try:
                 payload_object = self._get_valid_json(encoded_string)
+                self._original_input = self._get_original_input(payload_object)
                 break
             except ValueError:
+                payload_object = None
                 pass
 
         if payload_object is None:
             raise ValueError("Unable to reconstruct original payload!")
 
-        print("Valid payload JSON: '{0}'".format(json.dumps(payload_object)))
-        print("DONE!")
+    # noinspection PyMethodMayBeStatic
+    def _get_original_input(self, payload_object):
+        must_have_keys = ['input_length', 'input_crc', 'input_b64_str', 'input_b64_str_len', 'input_b64_crc']
+        keys = list(payload_object.keys())
+        has_all_keys = all(elem in keys for elem in must_have_keys)
+        if not has_all_keys:
+            raise ValueError("Missing keys in payload!")
+
+        if len(payload_object["input_b64_str"]) != payload_object["input_b64_str_len"]:
+            raise ValueError("Wrong B64 input length")
+
+        input_b64 = payload_object["input_b64_str"].encode()
+
+        if hex(zlib.crc32(input_b64) & 0xffffffff) != payload_object["input_b64_crc"]:
+            raise ValueError("Wrong B64 CRC value")
+
+        input_enc = b64decode(payload_object["input_b64_str"])
+        input_string = input_enc.decode()
+
+        if len(input_string) != payload_object["input_length"]:
+            raise ValueError("Wrong input length")
+
+        if hex(zlib.crc32(input_string.encode()) & 0xffffffff) != payload_object["input_crc"]:
+            raise ValueError("Wrong input CRC value")
+
+        return input_string
 
     # noinspection PyMethodMayBeStatic
     def _get_valid_json(self, b64_encoded_string):
@@ -83,6 +117,7 @@ class StringReconstructor:
             missing_chunk = ""
             number_of_chunks = len(self._chunks)
             chunk_length = len(self._chunks[0])
+            missing_chunk_total = 0
             for li in range(chunk_length):
                 # print("-" * 30)
                 missing_byte = self._parity_bytes[li]
@@ -92,19 +127,23 @@ class StringReconstructor:
                     # print("Chunk_{0}_char_{1}: {2}({3})".format(ci, li, chunk_char, chunk_byte))
                     missing_byte ^= chunk_byte
 
+                missing_chunk_total += missing_byte
                 missing_char = chr(missing_byte)
                 missing_chunk += missing_char
                 # print("Missing_byte_{0}: {1}: {2}".format(li, hex(missing_byte), missing_char))
 
-            self._reconstructed_chunk = missing_chunk
-            print("Missing chunk: '{0}'".format(self._reconstructed_chunk))
+            if missing_chunk_total != 0:
+                self._reconstructed_chunk = missing_chunk
+                print("Missing chunk: '{0}'".format(self._reconstructed_chunk))
+            else:
+                print("No Missing chunks")
 
     def _check_chunks(self):
         print("Available chunks: '{0}'".format(self._chunks))
 
         self._extract_parity_chunk()
         # print("Parity Bytes[length:{1}]: {0}".format(self._parity_bytes, len(self._parity_bytes)))
-        print("Available chunks: '{0}'".format(self._chunks))
+        # print("Available chunks: '{0}'".format(self._chunks))
 
     def _extract_parity_chunk(self):
         max_chunk_length = self._get_max_chunk_length()
