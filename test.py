@@ -1,8 +1,9 @@
 import unittest
 
 test_modules = [
-    'tests.test_string_reconstructor',
-    'tests.test_string_splitter',
+    'tests.test_01_string_splitter',
+    'tests.test_02_string_reconstructor',
+    'tests.test_03_combo',
 ]
 
 suite = unittest.TestSuite()

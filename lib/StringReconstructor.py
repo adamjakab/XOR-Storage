@@ -136,8 +136,6 @@ class StringReconstructor:
             if missing_chunk_total != 0:
                 self._reconstructed_chunk = missing_chunk
                 print("Missing chunk: '{0}'".format(self._reconstructed_chunk))
-            else:
-                print("No Missing chunks")
 
     def _check_chunks(self):
         # print("Available chunks: '{0}'".format(self._chunks))
