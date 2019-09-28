@@ -13,19 +13,20 @@ class StringReconstructor:
     _original_input = None
 
     def __init__(self, chunks):
+        if len(chunks) < 2:
+            raise ValueError("Number of chunks must be at least 2!")
         self._chunks = chunks
+        self._check_chunks()
 
     def get_original_input(self):
         return self._original_input
 
     def reconstruct(self):
-        self._check_chunks()
         self._reconstruct_missing_chunk()
         try:
             self._reconstruct_original_input()
-            print("PASS")
         except ValueError:
-            print("FAIL!")
+            raise ValueError("Reconstruction failed.")
 
     def _reconstruct_original_input(self):
         chunks = self._chunks
@@ -34,7 +35,7 @@ class StringReconstructor:
             chunks.append(self._reconstructed_chunk)
 
         number_of_chunks = len(self._chunks)
-        print("All Chunks[length: {1}]: {0}".format(chunks, number_of_chunks))
+        # print("Reconstructing from chunks[length: {1}]: {0}".format(chunks, number_of_chunks))
 
         '''
             The correct order of the chunks is unknown so we need to test them all
@@ -139,7 +140,7 @@ class StringReconstructor:
                 print("No Missing chunks")
 
     def _check_chunks(self):
-        print("Available chunks: '{0}'".format(self._chunks))
+        # print("Available chunks: '{0}'".format(self._chunks))
 
         self._extract_parity_chunk()
         # print("Parity Bytes[length:{1}]: {0}".format(self._parity_bytes, len(self._parity_bytes)))
@@ -148,7 +149,7 @@ class StringReconstructor:
     def _extract_parity_chunk(self):
         max_chunk_length = self._get_max_chunk_length()
         min_chunk_length = self._get_min_chunk_length(max_chunk_length)
-        print("Chunk lengths: Min:{0} Max:{1}".format(min_chunk_length, max_chunk_length))
+        # print("Chunk lengths: Min:{0} Max:{1}".format(min_chunk_length, max_chunk_length))
 
         number_of_chunks = len(self._chunks)
         min_length_chunks = 0
@@ -161,7 +162,10 @@ class StringReconstructor:
                 max_length_chunks += 1
 
         if min_length_chunks + max_length_chunks != number_of_chunks:
-            raise ValueError("Inconsistent chunk lengths!")
+            raise ValueError("Inconsistent chunk lengths! Only two sizes are allowed.")
+
+        if min_length_chunks != max_length_chunks and max_length_chunks > 1:
+            raise ValueError("Inconsistent chunk lengths! Only one parity chunk is allowed.")
 
         # print("Min length chunks:{0} Max length chunks:{1}".format(min_length_chunks, max_length_chunks))
         if min_length_chunks != number_of_chunks:
@@ -175,7 +179,10 @@ class StringReconstructor:
             del self._chunks[parity_chunk_index]
 
             # Parity string is b64encoded
-            self._parity_bytes = bytearray(b64decode(parity_string))
+            try:
+                self._parity_bytes = bytearray(b64decode(parity_string))
+            except binascii.Error:
+                pass
 
     def _get_min_chunk_length(self, min_length):
         for chunk in self._chunks:

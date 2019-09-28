@@ -15,6 +15,8 @@ class StringSplitter:
 
     def __init__(self, input_string, number_of_databases):
         self._input_string = input_string
+        if number_of_databases < 3:
+            raise ValueError("Number of databases cannot be less than 3!")
         self._number_of_databases = number_of_databases
         self._number_of_chunks = self._number_of_databases - 1
 

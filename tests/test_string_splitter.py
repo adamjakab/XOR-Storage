@@ -15,6 +15,12 @@ class StringSplitterTestCase(unittest.TestCase):
 
     def test__init(self):
         input_string = self.random_string(self._generated_input_length)
+
+        # Number of databases cannot be less than 3
+        self.assertRaises(ValueError, StringSplitter, input_string, 0)
+        self.assertRaises(ValueError, StringSplitter, input_string, 1)
+        self.assertRaises(ValueError, StringSplitter, input_string, 2)
+
         splitter = StringSplitter(input_string, self._number_of_databases)
 
         self.assertIsInstance(splitter, StringSplitter)
@@ -23,6 +29,9 @@ class StringSplitterTestCase(unittest.TestCase):
         self.assertEqual(splitter._input_string, input_string)
         self.assertIsNone(splitter._chunks)
         self.assertIsNone(splitter._chunk_length)
+
+
+
 
     def test__split(self):
         input_string = self.random_string(self._generated_input_length)
