@@ -1,9 +1,8 @@
-from string import *
-import zlib
 import json
-from math import ceil
-from base64 import b64encode, b64decode
 import textwrap
+import zlib
+from base64 import b64encode
+from math import ceil
 
 
 class StringSplitter:
@@ -15,8 +14,12 @@ class StringSplitter:
 
     def __init__(self, input_string, number_of_databases):
         self._input_string = input_string
+
         if number_of_databases < 3:
             raise ValueError("Number of databases cannot be less than 3!")
+        if number_of_databases > 6:
+            raise ValueError("Number of databases cannot be more than 6!")
+
         self._number_of_databases = number_of_databases
         self._number_of_chunks = self._number_of_databases - 1
 
@@ -34,11 +37,11 @@ class StringSplitter:
 
         # @todo: This is not testable this way - needs better separation
         output_object = {
-            "input_length":         input_len,
-            "input_crc":            input_crc,
-            "input_b64_str":        input_b64_str,
-            "input_b64_str_len":    input_b64_str_len,
-            "input_b64_crc":        input_b64_crc,
+            "input_length": input_len,
+            "input_crc": input_crc,
+            "input_b64_str": input_b64_str,
+            "input_b64_str_len": input_b64_str_len,
+            "input_b64_crc": input_b64_crc,
         }
 
         output_json = json.dumps(output_object)

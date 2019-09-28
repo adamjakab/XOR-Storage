@@ -1,8 +1,10 @@
-import unittest
-import string
 import random
-from lib.StringSplitter import StringSplitter
+import string
+import unittest
+from itertools import islice, count
+
 from lib.StringReconstructor import StringReconstructor
+from lib.StringSplitter import StringSplitter
 
 
 class ComboTestCase(unittest.TestCase):
@@ -36,14 +38,42 @@ class ComboTestCase(unittest.TestCase):
     def test_multiple_databases(self):
         min_db = self._number_of_databases
         max_db = 6
-        input_string = self._get_random_string()
-        for num_db in range(min_db, max_db):
+        for num_db in range(min_db, max_db + 1):
+            input_string = self._get_random_string()
             reconstructed_input = self._get_split_reconstruct_result(input_string, num_db)
             self.assertEqual(input_string, reconstructed_input)
 
+    def test_missing_chunk_reconstruction(self):
+        min_db = self._number_of_databases
+        max_db = 6
 
+        for num_db in range(min_db, max_db + 1):
+            # print("-" * 64)
+            # This array will tell which chunk to remove during testing (None means no chunks are removed)
+            index_array = [None]
+            for i in islice(count(), num_db):
+                index_array.append(i)
 
-    def _test_zzz_big_1mb(self):
+            for chunk_index in index_array:
+                # print("TESTING[DB={0}] WITH MISSING CHUNK: {1}".format(num_db, chunk_index))
+
+                input_string = self._get_random_string()
+                splitter = StringSplitter(input_string, num_db)
+                splitter.split()
+                splitter.create_parity()
+                chunks = splitter.get_chunks()
+                del splitter
+
+                if chunk_index is not None:
+                    del chunks[chunk_index]
+
+                reconstructor = StringReconstructor(chunks)
+                reconstructor.reconstruct()
+                reconstructed_input = reconstructor.get_original_input()
+
+                self.assertEqual(input_string, reconstructed_input)
+
+    def test_zzz_big_1mb(self):
         input_length = 2 ** 20
         input_string = self._get_random_string(input_length)
         reconstructed_input = self._get_split_reconstruct_result(input_string, self._number_of_databases)

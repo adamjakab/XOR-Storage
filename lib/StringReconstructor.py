@@ -1,9 +1,8 @@
 import binascii
 import json
 import zlib
-from string import *
-from base64 import b64encode, b64decode
-from itertools import product, permutations, islice, count
+from base64 import b64decode
+from itertools import permutations, islice, count
 
 
 class StringReconstructor:
@@ -15,6 +14,9 @@ class StringReconstructor:
     def __init__(self, chunks):
         if len(chunks) < 2:
             raise ValueError("Number of chunks must be at least 2!")
+        if len(chunks) > 6:
+            raise ValueError("Number of chunks can be maximum 6!")
+
         self._chunks = chunks
         self._check_chunks()
 
@@ -135,7 +137,7 @@ class StringReconstructor:
 
             if missing_chunk_total != 0:
                 self._reconstructed_chunk = missing_chunk
-                print("Missing chunk: '{0}'".format(self._reconstructed_chunk))
+                # print("Missing chunk: '{0}'".format(self._reconstructed_chunk))
 
     def _check_chunks(self):
         # print("Available chunks: '{0}'".format(self._chunks))

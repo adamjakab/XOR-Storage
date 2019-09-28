@@ -1,6 +1,7 @@
-import unittest
-import string
 import random
+import string
+import unittest
+
 from lib.StringReconstructor import StringReconstructor
 
 
@@ -17,6 +18,9 @@ class StringReconstructorTestCase(unittest.TestCase):
         # Number of chunks must be at least 2!
         self.assertRaises(ValueError, StringReconstructor, [])
         self.assertRaises(ValueError, StringReconstructor, ['A'])
+
+        # Number of chunks can be maximum 6!
+        self.assertRaises(ValueError, StringReconstructor, ['A', 'B', 'C', 'D', 'E', 'F', 'G'])
 
         # Default
         chunks = ['A', 'B']
@@ -53,7 +57,6 @@ class StringReconstructorTestCase(unittest.TestCase):
         chunks = ['A', 'XXX', 'YYY']
         self.assertRaises(ValueError, StringReconstructor, chunks)
 
-
     def test__reconstruct(self):
         # Bad chunks should raise ValueError
         chunks = ['A', 'B', 'C']
@@ -75,7 +78,6 @@ class StringReconstructorTestCase(unittest.TestCase):
         changed_input = 'ABC'
         reconstructor._original_input = changed_input
         self.assertEqual(reconstructor.get_original_input(), reconstructor._original_input)
-
 
     def random_string(self, string_length=10):
         """Generate a random string of fixed length """
