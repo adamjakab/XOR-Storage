@@ -6,12 +6,12 @@ before_install:
   - python --version
   - pip install -U pip
   - pip install -U pytest
-  - pip install pipenv
+  - pip install -U pipenv
   - pip install codecov
 install:
   # - pip install ".[test]" . # install package + test dependencies
-  - pipenv shell
   - pipenv install
+  - pipenv shell
 script: python -m unittest discover -s ./tests/ -t ./tests -p test_* # run the tests
 after_success:
   - codecov # submit coverage
