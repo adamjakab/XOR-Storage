@@ -1,6 +1,9 @@
 XOR Storage
 ===========
 
+[![Build Status](https://travis-ci.com/adamjakab/XOR-Storage.svg?branch=master)](https://travis-ci.com/adamjakab/XOR-Storage)
+[![codecov](https://codecov.io/gh/adamjakab/XOR-Storage/branch/master/graph/badge.svg)](https://codecov.io/gh/adamjakab/XOR-Storage)
+
 A proof of concept to show how to achieve a redundancy capable split storage for future cloud use inspired by RAID5 
 used on storage arrays. 
 
